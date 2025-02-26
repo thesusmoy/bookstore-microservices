@@ -9,7 +9,7 @@ app.use(express.json());
 app.post('/orders', async (req, res) => {
     const { bookId, userId } = req.body;
 
-    //Call Inventory Service to check stock
+    // Call Inventory Service to check stock
     const inventoryResponse = await axios.get(
         `http://localhost:3004/inventory/${bookId}`
     );
