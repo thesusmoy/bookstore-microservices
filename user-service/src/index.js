@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 app.use(express.json());
@@ -30,8 +31,14 @@ app.post('/register', async (req, res) => {
     res.json({ message: 'User registered successfully' });
 });
 
+// Rate limit
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again after an hour',
+});
 // Login User
-app.post('/login', async (req, res) => {
+app.post('/login', limiter, async (req, res) => {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
 
