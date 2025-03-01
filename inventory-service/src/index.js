@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 app.use(express.json());
@@ -18,8 +19,15 @@ const inventorySchema = new mongoose.Schema({
 
 const Inventory = mongoose.model('Inventory', inventorySchema);
 
+// rate limit
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 5 requests per windowMs
+    message: 'Too many requests from this IP, please try again after an hour',
+});
+
 // Update inventory
-app.post('/inventory/:bookId', async (req, res) => {
+app.post('/inventory/:bookId', limiter, async (req, res) => {
     const { bookId } = req.params;
     const { stock } = req.body;
     await Inventory.findOne({ bookId }, { stock });
@@ -27,7 +35,7 @@ app.post('/inventory/:bookId', async (req, res) => {
 });
 
 // Get stock
-app.get('/inventory/:bookId', async (req, res) => {
+app.get('/inventory/:bookId', limiter, async (req, res) => {
     const { bookId } = req.params;
     const inventory = await Inventory.findOne({ bookId });
     res.json(inventory);
