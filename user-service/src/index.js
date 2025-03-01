@@ -40,7 +40,7 @@ const limiter = rateLimit({
 // Login User
 app.post('/login', limiter, async (req, res) => {
     const { username, password } = req.body;
-    const user = await User.findOne({ username: username });
+    const user = await User.findOne({ username: { $eq: username } });
 
     if (user && (await bcryptjs.compare(password, user.password))) {
         const token = jwt.sign({ username }, process.env.JWT_SECRET);
